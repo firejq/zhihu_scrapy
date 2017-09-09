@@ -56,17 +56,20 @@ class ZhihuSpider(scrapy.Spider):
         """初始请求
         :return:
         """
-        yield Request(self.user_info_url.format(user=self.start_user_url_token,
-                                                include=self.user_query),
-                      self.parse_user_info)
-        yield Request(self.followees_url.format(user=self.start_user_url_token,
-                                                include=self.followees_query,
-                                                limit=20, offset=0),
-                      self.parse_followees)
-        yield Request(self.followers_url.format(user=self.start_user_url_token,
-                                                include=self.followers_query,
-                                                limit=20, offset=0),
-                      self.parse_followers)
+        yield Request(
+            url=self.user_info_url.format(user=self.start_user_url_token,
+                                          include=self.user_query),
+            callback=self.parse_user_info)
+        yield Request(url=self.followees_url.format(
+            user=self.start_user_url_token,
+            include=self.followees_query,
+            limit=20, offset=0),
+            callback=self.parse_followees)
+        yield Request(url=self.followers_url.format(
+            user=self.start_user_url_token,
+            include=self.followers_query,
+            limit=20, offset=0),
+            callback=self.parse_followers)
 
     def parse_user_info(self, response):
         """查询用户详细信息的回调函数
@@ -82,16 +85,16 @@ class ZhihuSpider(scrapy.Spider):
         yield user_item
 
         yield Request(
-            self.followees_url.format(user=result.get('url_token'),
-                                      include=self.followees_query,
-                                      limit=20, offset=0),
-            self.parse_followees)
+            url=self.followees_url.format(user=result.get('url_token'),
+                                          include=self.followees_query,
+                                          limit=20, offset=0),
+            callback=self.parse_followees)
 
         yield Request(
-            self.followers_url.format(user=result.get('url_token'),
-                                      include=self.followers_query,
-                                      limit=20, offset=0),
-            self.parse_followers)
+            url=self.followers_url.format(user=result.get('url_token'),
+                                          include=self.followers_query,
+                                          limit=20, offset=0),
+            callback=self.parse_followers)
 
     def parse_followees(self, response):
         """查询关注列表的回调函数
@@ -99,18 +102,16 @@ class ZhihuSpider(scrapy.Spider):
         :return:
         """
         results = json.loads(response.text)
-
         if 'data' in results.keys():
             for result in results.get('data'):
                 yield Request(
-                    self.user_info_url.format(user=result.get('url_token'),
-                                              include=self.user_query),
-                    self.parse_user_info)
-
+                    url=self.user_info_url.format(user=result.get('url_token'),
+                                                  include=self.user_query),
+                    callback=self.parse_user_info)
         if 'paging' in results.keys():
-            if results.get('paging').get('is_end') is False:
-                next_page = results.get('paging').get('next')
-                yield Request(next_page, self.parse_followees)
+            if results.get('paging').get('is_end') == 'false':
+                next_page_url = results.get('paging').get('next')
+                yield Request(url=next_page_url, callback=self.parse_followees)
 
     def parse_followers(self, response):
         """查询关注者列表的回调函数
@@ -118,16 +119,14 @@ class ZhihuSpider(scrapy.Spider):
         :return:
         """
         results = json.loads(response.text)
-
         if 'data' in results.keys():
             for result in results.get('data'):
                 yield Request(
-                    self.user_info_url.format(user=result.get('url_token'),
-                                              include=self.user_query),
-                    self.parse_user_info)
-
+                    url=self.user_info_url.format(user=result.get('url_token'),
+                                                  include=self.user_query),
+                    callback=self.parse_user_info)
         if 'paging' in results.keys():
-            if results.get('paging').get('is_end') is False:
-                next_page = results.get('paging').get('next')
-                yield Request(next_page,
-                              self.parse_followers)
+            if results.get('paging').get('is_end') == 'false':
+                next_page_url = results.get('paging').get('next')
+                yield Request(url=next_page_url,
+                              callback=self.parse_followers)
