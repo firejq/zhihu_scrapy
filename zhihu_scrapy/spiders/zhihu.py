@@ -8,7 +8,6 @@ from zhihu_scrapy.items import UserItem
 
 
 class ZhihuSpider(scrapy.Spider):
-
     name = "zhihu"
     allowed_domains = ["www.zhihu.com"]
     # 获取指定url_token的用户的详细信息
@@ -55,7 +54,6 @@ class ZhihuSpider(scrapy.Spider):
 
     def start_requests(self):
         """初始请求
-
         :return:
         """
         yield Request(self.user_info_url.format(user=self.start_user_url_token,
@@ -72,7 +70,6 @@ class ZhihuSpider(scrapy.Spider):
 
     def parse_user_info(self, response):
         """查询用户详细信息的回调函数
-
         :param response:
         :return:
         """
@@ -98,7 +95,6 @@ class ZhihuSpider(scrapy.Spider):
 
     def parse_followees(self, response):
         """查询关注列表的回调函数
-
         :param response:
         :return:
         """
@@ -118,7 +114,6 @@ class ZhihuSpider(scrapy.Spider):
 
     def parse_followers(self, response):
         """查询关注者列表的回调函数
-
         :param response:
         :return:
         """
